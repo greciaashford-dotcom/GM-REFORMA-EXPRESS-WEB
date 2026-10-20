@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #fcfbf9;
+  --foreground: #1e293b;
+  --primary: #03203d;
+  --secondary: #c9932a;
+  --petroleum-primary: #03203d;
+}
+
+.dark {
+  --background: #031424;
+  --foreground: #f8fafc;
+  --primary: #03203d;
+  --secondary: #c9932a;
+  --petroleum-primary: #c9932a;
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Smooth scroll unless user prefers reduced motion */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* Accessible focus indicators with brand secondary gold */
+  :focus-visible {
+    outline: 2px solid #c9932a;
+    outline-offset: 2px;
+  }
+}
+

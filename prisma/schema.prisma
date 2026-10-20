@@ -1,0 +1,762 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// -----------------------------------------------------------------------------
+// ENUMS
+// -----------------------------------------------------------------------------
+
+enum Role {
+  SUPERADMIN
+  OPERATIONS
+  CONTENT_EDITOR
+  MARKETING
+  ACCOUNTANT
+  CUSTOMER
+}
+
+enum ServiceCategory {
+  REFORMAS_VIVIENDA
+  INSTALACIONES_CONFORT
+  ACCESIBILIDAD_COMUNIDADES
+}
+
+enum ContentStatus {
+  DRAFT
+  APPROVED
+  ARCHIVED
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUOTED
+  ARCHIVED
+}
+
+enum QuoteStatus {
+  DRAFT
+  PENDING_APPROVAL
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum VerificationRequestStatus {
+  PENDING
+  MATCHED
+  MISMATCH_ALERT
+  APPROVED
+  REJECTED
+}
+
+enum BookingType {
+  ORIENTATION_CALL
+  VALUATION_VISIT
+}
+
+enum BookingStatus {
+  REQUESTED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  READY_TO_PAY
+  PAID
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum InvoiceType {
+  STANDARD
+  ADVANCE
+  MILESTONE
+  RECTIFICATIVE
+}
+
+enum FiscalStatus {
+  TEST_MODE
+  ISSUED
+  RECTIFIED
+  FAILED
+}
+
+enum SubscriberStatus {
+  PENDING_CONFIRMATION
+  CONFIRMED
+  UNSUBSCRIBED
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  CANCELLED
+}
+
+// -----------------------------------------------------------------------------
+// 1. CONFIGURACIÓN Y PARÁMETROS GENERALES
+// -----------------------------------------------------------------------------
+
+model SiteSettings {
+  id                          String   @id @default("default")
+  commercialName              String   @default("GM REFORMA EXPRESS")
+  legalName                   String?  // Razón social pendiente de validación
+  taxId                       String   @default("Y90137803D") // Literal NIE/NIF facilitado
+  taxIdVerified               Boolean  @default(false)
+  taxIdNotes                  String   @default("Identificador de 10 caracteres pendiente de comprobación documental y naturaleza jurídica ante AEAT.")
+  taxAddress                  String?  // Domicilio fiscal pendiente
+  phone                       String   @default("+34640677948")
+  phoneVisible                String   @default("+34 640 677 948")
+  email                       String   @default("notificaciones.info@reformaexpress.com")
+  domainCanonical             String   @default("https://www.reformaexpress.com")
+  commercialArea              String   @default("Madrid, España")
+  whatsappUrl                 String   @default("https://wa.me/34640677948")
+  whatsappEnabled             Boolean  @default(true)
+  timezone                    String   @default("Europe/Madrid")
+  defaultCurrency             String   @default("EUR")
+  publicBookingsEnabled       Boolean  @default(true)
+  livePaymentsEnabled         Boolean  @default(false)
+  fiscalIssuanceEnabled       Boolean  @default(false)
+  marketingAutomationsEnabled Boolean  @default(false)
+  coveragePostalCodes         String   @default("28001-28055,28100-28991")
+  updatedAt                   DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 2. IDENTIDAD Y CONTROL DE ACCESO (RBAC)
+// -----------------------------------------------------------------------------
+
+model User {
+  id                 String           @id @default(cuid())
+  email              String           @unique
+  passwordHash       String
+  name               String
+  role               Role             @default(CUSTOMER)
+  twoFactorEnabled   Boolean          @default(false)
+  twoFactorSecret    String?
+  isEmailVerified    Boolean          @default(false)
+  verificationToken  String?
+  resetToken         String?
+  resetTokenExpires  DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  customerProfile    CustomerProfile?
+  auditLogs          AuditLog[]
+  createdQuotes      Quote[]          @relation("QuoteAuthor")
+  assignedProjects   Project[]        @relation("AssignedManager")
+  customerProjects   Project[]        @relation("CustomerProjects")
+  customerQuotes     Quote[]          @relation("CustomerQuotes")
+  customerBookings   Booking[]
+  customerPayments   Payment[]
+  customerInvoices   Invoice[]
+  customerMessages   CustomerMessage[]
+  agreedAmountReqs   AgreedAmountVerificationRequest[]
+}
+
+model CustomerProfile {
+  id                        String   @id @default(cuid())
+  userId                    String   @unique
+  user                      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone                     String?
+  workAddress               String?
+  workPostalCode            String?
+  workCity                  String?  @default("Madrid")
+  billingName               String?
+  billingTaxId              String?
+  billingAddress            String?
+  billingPostalCode         String?
+  billingCity               String?
+  preferredLocale           String   @default("es")
+  electronicInvoiceConsent  Boolean  @default(false)
+  marketingConsent          Boolean  @default(false)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 3. CATÁLOGO DE SERVICIOS Y TRADUCCIONES
+// -----------------------------------------------------------------------------
+
+model Service {
+  id                       String               @id @default(cuid())
+  key                      String               @unique // e.g. "reformas-banos-madrid"
+  category                 ServiceCategory
+  status                   ContentStatus        @default(DRAFT)
+  orderIndex               Int                  @default(0)
+  featuredImage            String?              // HTTPS URL
+  technicalReviewNotes     String?
+  isRegulated              Boolean              @default(false)
+  qualifiedPartnerRequired Boolean              @default(false)
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
+
+  translations             ServiceTranslation[]
+  quotes                   Quote[]
+}
+
+model ServiceTranslation {
+  id                    String   @id @default(cuid())
+  serviceId             String
+  service               Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  locale                String   // "es", "fr", "en", "de"
+  slug                  String
+  h1                    String
+  navTitle              String
+  shortDesc             String
+  seoTitle              String
+  seoDesc               String
+  introProblem          String   @db.Text
+  introSolution         String   @db.Text
+  introScope            String   @db.Text
+  includedItems         String   @db.Text // JSON string array
+  excludedItems         String   @db.Text // JSON string array
+  serviceVariants       String   @db.Text // JSON string array
+  processSteps          String   @db.Text // JSON string array
+  priceFactors          String   @db.Text // JSON string array
+  technicalRequirements String   @db.Text // JSON string array
+  faqs                  String   @db.Text // JSON array of {q, a}
+  relatedSlugs          String   @db.Text // JSON string array
+
+  @@unique([serviceId, locale])
+  @@unique([locale, slug])
+}
+
+// -----------------------------------------------------------------------------
+// 4. CAPTACIÓN COMERCIAL (LEADS)
+// -----------------------------------------------------------------------------
+
+model Lead {
+  id                   String     @id @default(cuid())
+  name                 String
+  email                String
+  phone                String
+  serviceSlug          String?
+  serviceName          String?
+  postalCode           String?
+  address              String?
+  description          String     @db.Text
+  estimatedBudget      String?
+  preferredContactTime String?
+  preferredLocale      String     @default("es")
+  status               LeadStatus @default(NEW)
+  marketingConsent     Boolean    @default(false)
+  privacyAcceptedAt    DateTime   @default(now())
+  ipAddress            String?
+  userAgent            String?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 5. PRESUPUESTOS, VERSIONES Y ACEPTACIÓN
+// -----------------------------------------------------------------------------
+
+model Quote {
+  id                 String              @id @default(cuid())
+  quoteNumber        String              @unique // "PRE-2026-001"
+  customerId         String
+  customer           User                @relation("CustomerQuotes", fields: [customerId], references: [id])
+  authorId           String?
+  author             User?               @relation("QuoteAuthor", fields: [authorId], references: [id])
+  serviceId          String?
+  service            Service?            @relation(fields: [serviceId], references: [id])
+  title              String
+  status             QuoteStatus         @default(DRAFT)
+  currentVersion     Int                 @default(1)
+  subtotalCents      Int                 @default(0)
+  vatRatePercent     Int                 @default(10) // 10% vivienda o 21% general
+  vatAmountCents     Int                 @default(0)
+  totalCents         Int                 @default(0)
+  currency           String              @default("EUR")
+  validUntil         DateTime
+  notes              String?             @db.Text
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  versions           QuoteVersion[]
+  contractAcceptance ContractAcceptance?
+  payments           Payment[]
+  invoices           Invoice[]
+}
+
+model QuoteVersion {
+  id             String      @id @default(cuid())
+  quoteId        String
+  quote          Quote       @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  versionNumber  Int
+  subtotalCents  Int
+  vatRatePercent Int
+  vatAmountCents Int
+  totalCents     Int
+  notes          String?     @db.Text
+  createdAt      DateTime    @default(now())
+
+  lines          QuoteLine[]
+
+  @@unique([quoteId, versionNumber])
+}
+
+model QuoteLine {
+  id             String       @id @default(cuid())
+  versionId      String
+  version        QuoteVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  concept        String
+  quantity       Float        @default(1)
+  unit           String       @default("ud")
+  unitPriceCents Int
+  totalCents     Int
+}
+
+model ContractAcceptance {
+  id                   String   @id @default(cuid())
+  quoteId              String   @unique
+  quote                Quote    @relation(fields: [quoteId], references: [id])
+  versionNumber        Int
+  acceptedByUserId     String
+  acceptedByName       String
+  acceptedAt           DateTime @default(now())
+  ipAddress            String
+  userAgent            String
+  contractTermsVersion String   @default("1.0")
+  contractTextSnapshot String   @db.Text
+}
+
+// -----------------------------------------------------------------------------
+// 6. VALIDACIÓN CRÍTICA DEL IMPORTE ACORDADO
+// -----------------------------------------------------------------------------
+
+model AgreedAmountVerificationRequest {
+  id                 String                    @id @default(cuid())
+  customerId         String
+  customer           User                      @relation(fields: [customerId], references: [id])
+  quoteReference     String
+  serviceKey         String?
+  inputAmountCents   Int
+  status             VerificationRequestStatus @default(PENDING)
+  discrepancyDetails String?                   @db.Text
+  adminNotes         String?                   @db.Text
+  reviewedByUserId   String?
+  reviewedAt         DateTime?
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 7. SISTEMA DE RESERVAS Y AGENDA
+// -----------------------------------------------------------------------------
+
+model Booking {
+  id                      String        @id @default(cuid())
+  bookingNumber           String        @unique // "RES-2026-001"
+  customerId              String?
+  customer                User?         @relation(fields: [customerId], references: [id])
+  clientName              String
+  clientEmail             String
+  clientPhone             String
+  serviceKey              String
+  serviceTitle            String
+  type                    BookingType   @default(ORIENTATION_CALL)
+  status                  BookingStatus @default(REQUESTED)
+  postalCode              String
+  address                 String?
+  projectDetails          String?       @db.Text
+  startTimeUtc            DateTime
+  endTimeUtc              DateTime
+  durationMinutes         Int
+  rescheduleToken         String        @unique @default(cuid())
+  cancelToken             String        @unique @default(cuid())
+  cancelReason            String?
+  internalNotes           String?       @db.Text
+  requiresManualApproval  Boolean       @default(false)
+  confirmationEmailSent   Boolean       @default(false)
+  reminder24hSent         Boolean       @default(false)
+  reminder2hSent          Boolean       @default(false)
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  @@index([startTimeUtc, endTimeUtc])
+}
+
+// -----------------------------------------------------------------------------
+// 8. PROYECTOS Y SEGUIMIENTO OPERATIVO
+// -----------------------------------------------------------------------------
+
+model Project {
+  id                String             @id @default(cuid())
+  code              String             @unique // "PRJ-2026-001"
+  customerId        String
+  customer          User               @relation("CustomerProjects", fields: [customerId], references: [id])
+  assignedManagerId String?
+  assignedManager   User?              @relation("AssignedManager", fields: [assignedManagerId], references: [id])
+  quoteId           String?
+  title             String
+  serviceKey        String
+  status            ProjectStatus      @default(PLANNING)
+  address           String
+  startDate         DateTime?
+  estimatedEndDate  DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  milestones        ProjectMilestone[]
+  messages          CustomerMessage[]
+}
+
+model ProjectMilestone {
+  id          String          @id @default(cuid())
+  projectId   String
+  project     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  orderIndex  Int             @default(0)
+  amountCents Int             @default(0)
+  percentage  Int             @default(0)
+  status      MilestoneStatus @default(PENDING)
+  isPaid      Boolean         @default(false)
+  dueDate     DateTime?
+  completedAt DateTime?
+}
+
+model CustomerMessage {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  senderId   String
+  sender     User     @relation(fields: [senderId], references: [id])
+  message    String   @db.Text
+  isInternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// 9. PAGOS Y CONCILIACIÓN CON STRIPE
+// -----------------------------------------------------------------------------
+
+model Payment {
+  id                    String        @id @default(cuid())
+  paymentNumber         String        @unique // "PAY-2026-001"
+  customerId            String
+  customer              User          @relation(fields: [customerId], references: [id])
+  quoteId               String?
+  quote                 Quote?        @relation(fields: [quoteId], references: [id])
+  milestoneId           String?
+  stripeSessionId       String?       @unique
+  stripePaymentIntentId String?       @unique
+  amountCents           Int
+  currency              String        @default("EUR")
+  status                PaymentStatus @default(PENDING)
+  idempotencyKey        String        @unique
+  method                String        @default("stripe_checkout")
+  paidAt                DateTime?
+  receiptUrl            String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  invoice               Invoice?
+  paymentAttempts       PaymentAttempt[]
+  refunds               Refund[]
+}
+
+model PaymentAttempt {
+  id        String   @id @default(cuid())
+  paymentId String
+  payment   Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  status    String
+  rawEvent  String?  @db.Text
+  createdAt DateTime @default(now())
+}
+
+model Refund {
+  id             String   @id @default(cuid())
+  paymentId      String
+  payment        Payment  @relation(fields: [paymentId], references: [id])
+  stripeRefundId String?  @unique
+  amountCents    Int
+  reason         String?
+  status         String   @default("succeeded")
+  processedBy    String?
+  createdAt      DateTime @default(now())
+}
+
+model ProviderWebhookEvent {
+  id         String   @id @default(cuid())
+  eventId    String   @unique
+  provider   String   // "stripe", "resend", "fiscal"
+  eventType  String
+  payload    String   @db.Text
+  status     String   @default("processed")
+  createdAt  DateTime @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// 10. FACTURACIÓN AUTOMÁTICA Y TRAZABILIDAD FISCAL
+// -----------------------------------------------------------------------------
+
+model Invoice {
+  id                   String        @id @default(cuid())
+  paymentId            String?       @unique
+  payment              Payment?      @relation(fields: [paymentId], references: [id])
+  quoteId              String?
+  quote                Quote?        @relation(fields: [quoteId], references: [id])
+  customerId           String
+  customer             User          @relation(fields: [customerId], references: [id])
+  series               String        @default("F2026")
+  number               Int
+  fullNumber           String        @unique // "F2026-00001"
+  type                 InvoiceType   @default(STANDARD)
+  rectifiesInvoiceId   String?
+  rectificationReason  String?
+  issueDate            DateTime      @default(now())
+  operationDate        DateTime      @default(now())
+  subtotalCents        Int
+  vatRatePercent       Int           @default(10)
+  vatAmountCents       Int
+  totalCents           Int
+  currency             String        @default("EUR")
+  isDraftOrTest        Boolean       @default(true) // "PRUEBA / NO VÁLIDO COMO FACTURA FISCAL"
+  fiscalStatus         FiscalStatus  @default(TEST_MODE)
+  issuerSnapshot       String        @db.Text // JSON snapshot
+  recipientSnapshot    String        @db.Text // JSON snapshot
+  pdfUrl               String?
+  fiscalProvider       String        @default("test-adapter")
+  fiscalProviderId     String?
+  createdAt            DateTime      @default(now())
+
+  lines                InvoiceLine[]
+
+  @@unique([series, number])
+}
+
+model InvoiceLine {
+  id             String   @id @default(cuid())
+  invoiceId      String
+  invoice        Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  concept        String
+  quantity       Float    @default(1)
+  unitPriceCents Int
+  vatRatePercent Int      @default(10)
+  vatAmountCents Int
+  totalCents     Int
+}
+
+// -----------------------------------------------------------------------------
+// 11. NEWSLETTER, CAMPAÑAS Y AUTOMATIZACIONES DE MARKETING
+// -----------------------------------------------------------------------------
+
+model Subscriber {
+  id                          String           @id @default(cuid())
+  email                       String           @unique
+  name                        String?
+  locale                      String           @default("es")
+  status                      SubscriberStatus @default(PENDING_CONFIRMATION)
+  doubleOptInToken            String           @unique @default(cuid())
+  confirmationSentAt          DateTime         @default(now())
+  confirmedAt                 DateTime?
+  unsubscribedAt              DateTime?
+  interests                   String?          // JSON array of service slugs
+  weeklyPromosReceivedThisWeek Int             @default(0)
+  lastPromoSentAt             DateTime?
+  source                      String           @default("web_footer")
+  ipAddress                   String?
+  userAgent                   String?
+  createdAt                   DateTime         @default(now())
+  updatedAt                   DateTime         @updatedAt
+
+  deliveries                  CampaignDelivery[]
+}
+
+model Suppression {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  reason    String   // "unsubscribed", "hard_bounce", "complaint"
+  createdAt DateTime @default(now())
+}
+
+model Campaign {
+  id             String                @id @default(cuid())
+  internalName   String
+  weekNumber     Int                   @default(1)
+  slotNumber     Int                   @default(1) // 1 = Martes, 2 = Jueves
+  status         CampaignStatus        @default(DRAFT)
+  scheduledFor   DateTime?
+  sentAt         DateTime?
+  targetSegment  String?               @default("all_active")
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  translations   CampaignTranslation[]
+  deliveries     CampaignDelivery[]
+}
+
+model CampaignTranslation {
+  id           String   @id @default(cuid())
+  campaignId   String
+  campaign     Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  locale       String   // "es", "fr", "en", "de"
+  subject      String
+  preheader    String
+  headline     String
+  bodyContent  String   @db.Text // JSON blocks or structured markdown
+  imageUrl     String?  // HTTPS external URL
+  imageAlt     String?
+  ctaText      String
+  ctaUrl       String
+
+  @@unique([campaignId, locale])
+}
+
+model CampaignDelivery {
+  id           String     @id @default(cuid())
+  campaignId   String
+  campaign     Campaign   @relation(fields: [campaignId], references: [id])
+  subscriberId String
+  subscriber   Subscriber @relation(fields: [subscriberId], references: [id])
+  status       String     @default("sent") // "sent", "bounced", "clicked"
+  deliveredAt  DateTime   @default(now())
+
+  @@unique([campaignId, subscriberId])
+}
+
+// -----------------------------------------------------------------------------
+// 12. BLOG Y PUBLICACIONES EDITORIALES
+// -----------------------------------------------------------------------------
+
+model Post {
+  id           String            @id @default(cuid())
+  slug         String            @unique
+  categoryKey  String            @default("consejos")
+  authorName   String            @default("Equipo GM REFORMA EXPRESS")
+  status       ContentStatus     @default(DRAFT)
+  featuredImage String?          // HTTPS URL
+  readingTime  Int               @default(5)
+  publishedAt  DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  translations PostTranslation[]
+}
+
+model PostTranslation {
+  id          String   @id @default(cuid())
+  postId      String
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  locale      String   // "es", "fr", "en", "de"
+  slug        String
+  title       String
+  excerpt     String
+  content     String   @db.Text
+  seoTitle    String
+  seoDesc     String
+
+  @@unique([postId, locale])
+  @@unique([locale, slug])
+}
+
+// -----------------------------------------------------------------------------
+// 13. BIBLIOTECA DE IMÁGENES EXTERNAS (CON PROTECCIÓN SSRF)
+// -----------------------------------------------------------------------------
+
+model MediaAsset {
+  id           String   @id @default(cuid())
+  httpsUrl     String   @unique
+  domain       String
+  altEs        String   @default("GM REFORMA EXPRESS - Servicios de reformas en Madrid")
+  altFr        String   @default("GM REFORMA EXPRESS - Services de rénovation à Madrid")
+  altEn        String   @default("GM REFORMA EXPRESS - Renovation services in Madrid")
+  altDe        String   @default("GM REFORMA EXPRESS - Renovierungsarbeiten in Madrid")
+  width        Int      @default(1200)
+  height       Int      @default(800)
+  focalPoint   String   @default("center")
+  credit       String?
+  licenseNotes String?
+  createdAt    DateTime @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// 14. DOCUMENTOS LEGALES, CONSENTIMIENTOS Y AUDITORÍA
+// -----------------------------------------------------------------------------
+
+model LegalDocument {
+  id        String         @id @default(cuid())
+  type      String         @unique // "aviso-legal", "privacidad", "cookies", "condiciones-uso", "condiciones-contratacion", "desistimiento", "accesibilidad"
+  title     String
+  contentEs String         @db.Text
+  contentFr String         @db.Text
+  contentEn String         @db.Text
+  contentDe String         @db.Text
+  version   String         @default("1.0")
+  updatedAt DateTime       @updatedAt
+}
+
+model ConsentRecord {
+  id         String   @id @default(cuid())
+  subject    String   // email or customer ID
+  purpose    String   // "marketing", "cookies_analytics", "cookies_marketing", "terms_contracting"
+  granted    Boolean  @default(true)
+  locale     String   @default("es")
+  version    String   @default("1.0")
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+}
+
+model Redirect {
+  id          String   @id @default(cuid())
+  sourcePath  String   @unique
+  targetPath  String
+  statusCode  Int      @default(301)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  entityType String   // "Quote", "Payment", "Invoice", "SiteSettings", "Booking", "Service"
+  entityId   String
+  action     String   // "CREATE", "UPDATE", "APPROVE", "RECTIFY", "DELETE", "LOGIN"
+  details    String   @db.Text // JSON string with previous/new state
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+}
+
+model OutboxEvent {
+  id          String   @id @default(cuid())
+  eventType   String   // "INVOICE_GENERATE", "EMAIL_SEND", "BOOKING_CONFIRMATION", "DOUBLE_OPTIN_SEND"
+  payload     String   @db.Text
+  status      String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  attempts    Int      @default(0)
+  lastError   String?  @db.Text
+  createdAt   DateTime @default(now())
+  processedAt DateTime?
+}
