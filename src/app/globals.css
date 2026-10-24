@@ -3,15 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --background: #fcfbf9;
-  --foreground: #1e293b;
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --primary: #03203d;
   --secondary: #c9932a;
   --petroleum-primary: #03203d;
 }
 
 .dark {
-  --background: #031424;
+  --background: #020d1a;
   --foreground: #f8fafc;
   --primary: #03203d;
   --secondary: #c9932a;
@@ -40,3 +40,46 @@
   }
 }
 
+@layer utilities {
+  /* Architectural subtle background grid */
+  .bg-architectural-grid {
+    background-size: 32px 32px;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  }
+
+  .bg-light-grid {
+    background-size: 28px 28px;
+    background-image: 
+      linear-gradient(to right, rgba(3, 32, 61, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(3, 32, 61, 0.035) 1px, transparent 1px);
+  }
+
+  /* Custom sleek scrollbars */
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(201, 147, 42, 0.35);
+    border-radius: 9999px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(201, 147, 42, 0.65);
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
