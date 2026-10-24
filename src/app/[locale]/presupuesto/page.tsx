@@ -136,14 +136,22 @@ export default function PresupuestoPage({ params }: PresupuestoPageProps) {
               <option value="reformas-cocinas-madrid">Reformas de cocinas</option>
               <option value="reformas-integrales-madrid">Reformas integrales</option>
               <option value="cambio-banera-ducha-madrid">Cambio de bañera por ducha</option>
-              <option value="suelos-tarima-madrid">Suelos y tarima</option>
+              <option value="pequenas-reformas-madrid">Pequeñas reformas del hogar</option>
               <option value="pintura-alisado-madrid">Pintura y alisado de paredes</option>
+              <option value="suelos-tarima-madrid">Suelos y tarima</option>
               <option value="carpinteria-puertas-madrid">Carpintería interior y puertas</option>
               <option value="fontaneria-madrid">Fontanería e instalaciones</option>
               <option value="electricidad-iluminacion-madrid">Electricidad e iluminación</option>
               <option value="ventanas-cerramientos-madrid">Ventanas y cerramientos</option>
+              <option value="aislamiento-madrid">Aislamiento térmico y acústico</option>
+              <option value="climatizacion-aerotermia-madrid">Climatización y aerotermia</option>
+              <option value="humedades-madrid">Diagnóstico y solución de humedades</option>
               <option value="accesibilidad-viviendas-madrid">Viviendas y baños accesibles</option>
+              <option value="rehabilitacion-fachadas-madrid">Rehabilitación de fachadas</option>
+              <option value="cubiertas-impermeabilizacion-madrid">Cubiertas e impermeabilización</option>
               <option value="reformas-comunidades-madrid">Reformas para comunidades</option>
+              <option value="accesibilidad-portales-madrid">Accesibilidad en portales</option>
+              <option value="acondicionamiento-locales-madrid">Acondicionamiento de locales</option>
             </select>
           </div>
 

@@ -35,9 +35,46 @@ export default function BookingPage({ params }: BookingPageProps) {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Available services list for step 1 (all 20 specialties)
+  const serviceOptions = [
+    { key: "reformas-banos-madrid", title: "Reformas de baños" },
+    { key: "reformas-cocinas-madrid", title: "Reformas de cocinas" },
+    { key: "reformas-integrales-madrid", title: "Reformas integrales" },
+    { key: "cambio-banera-ducha-madrid", title: "Cambio de bañera por ducha" },
+    { key: "pequenas-reformas-madrid", title: "Pequeñas reformas del hogar" },
+    { key: "pintura-alisado-madrid", title: "Pintura y alisado de paredes" },
+    { key: "suelos-tarima-madrid", title: "Suelos y tarima" },
+    { key: "carpinteria-puertas-madrid", title: "Carpintería interior y puertas" },
+    { key: "fontaneria-madrid", title: "Fontanería y tuberías" },
+    { key: "electricidad-iluminacion-madrid", title: "Electricidad e iluminación" },
+    { key: "ventanas-cerramientos-madrid", title: "Ventanas y cerramientos" },
+    { key: "aislamiento-madrid", title: "Aislamiento térmico y acústico" },
+    { key: "climatizacion-aerotermia-madrid", title: "Climatización y aerotermia" },
+    { key: "humedades-madrid", title: "Diagnóstico y solución de humedades" },
+    { key: "accesibilidad-viviendas-madrid", title: "Viviendas y baños accesibles" },
+    { key: "rehabilitacion-fachadas-madrid", title: "Rehabilitación de fachadas" },
+    { key: "cubiertas-impermeabilizacion-madrid", title: "Cubiertas e impermeabilización" },
+    { key: "reformas-comunidades-madrid", title: "Comunidades de propietarios" },
+    { key: "accesibilidad-portales-madrid", title: "Accesibilidad en portales" },
+    { key: "acondicionamiento-locales-madrid", title: "Acondicionamiento de locales" },
+  ];
+
   // Form states
   const [serviceKey, setServiceKey] = useState(preselectedService);
-  const [serviceTitle, setServiceTitle] = useState("Reformas de baños");
+  const [serviceTitle, setServiceTitle] = useState(
+    () => serviceOptions.find((o) => o.key === preselectedService)?.title || "Reformas de baños"
+  );
+
+  useEffect(() => {
+    const paramSvc = searchParams.get("servicio");
+    if (paramSvc) {
+      setServiceKey(paramSvc);
+      const found = serviceOptions.find((o) => o.key === paramSvc);
+      if (found) setServiceTitle(found.title);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   const [bookingType, setBookingType] = useState<"ORIENTATION_CALL" | "VALUATION_VISIT">("VALUATION_VISIT");
   const [postalCode, setPostalCode] = useState("28001");
   const [postalCovered, setPostalCovered] = useState(true);
@@ -57,20 +94,6 @@ export default function BookingPage({ params }: BookingPageProps) {
   });
   const [availableSlots, setAvailableSlots] = useState<any[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
-
-  // Available services list for step 1
-  const serviceOptions = [
-    { key: "reformas-banos-madrid", title: "Reformas de baños" },
-    { key: "reformas-cocinas-madrid", title: "Reformas de cocinas" },
-    { key: "reformas-integrales-madrid", title: "Reformas integrales" },
-    { key: "cambio-banera-ducha-madrid", title: "Cambio de bañera por ducha" },
-    { key: "suelos-tarima-madrid", title: "Suelos y tarima" },
-    { key: "fontaneria-madrid", title: "Fontanería y tuberías" },
-    { key: "electricidad-iluminacion-madrid", title: "Electricidad e iluminación" },
-    { key: "ventanas-cerramientos-madrid", title: "Ventanas y cerramientos" },
-    { key: "accesibilidad-viviendas-madrid", title: "Viviendas accesibles" },
-    { key: "reformas-comunidades-madrid", title: "Comunidades de propietarios" },
-  ];
 
   // Fetch slots whenever date or type changes
   useEffect(() => {

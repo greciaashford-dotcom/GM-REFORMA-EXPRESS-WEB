@@ -247,44 +247,62 @@ export default async function HomePage({ params }: PageProps) {
                     Intervenciones más solicitadas
                   </span>
                   <div className="space-y-2">
-                    <Link
-                      href={`/${locale}/servicios/reformas-banos-madrid`}
-                      className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#c9932a]/50 transition-all group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Bath className="w-4 h-4 text-[#c9932a]" />
-                        <span className="text-xs font-bold text-white group-hover:text-[#c9932a] transition-colors">
+                    <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#c9932a]/50 transition-all">
+                      <Link
+                        href={`/${locale}/servicios/reformas-banos-madrid`}
+                        className="flex items-center gap-2.5 flex-1 min-w-0 group"
+                      >
+                        <Bath className="w-4 h-4 text-[#c9932a] shrink-0" />
+                        <span className="text-xs font-bold text-white group-hover:text-[#c9932a] transition-colors truncate">
                           Reforma Integral de Baño y Ducha
                         </span>
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#c9932a] group-hover:translate-x-0.5 transition-all" />
-                    </Link>
+                      </Link>
+                      <Link
+                        href={`/${locale}/reservar?servicio=reformas-banos-madrid`}
+                        className="px-2.5 py-1 rounded-lg bg-[#c9932a] hover:bg-amber-400 text-graphite-950 font-black text-[11px] flex items-center gap-1 shrink-0 shadow-xs transition-all"
+                      >
+                        <Calendar className="w-3 h-3" />
+                        <span>Reservar</span>
+                      </Link>
+                    </div>
 
-                    <Link
-                      href={`/${locale}/servicios/reformas-cocinas-madrid`}
-                      className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#c9932a]/50 transition-all group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <UtensilsCrossed className="w-4 h-4 text-[#c9932a]" />
-                        <span className="text-xs font-bold text-white group-hover:text-[#c9932a] transition-colors">
+                    <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#c9932a]/50 transition-all">
+                      <Link
+                        href={`/${locale}/servicios/reformas-cocinas-madrid`}
+                        className="flex items-center gap-2.5 flex-1 min-w-0 group"
+                      >
+                        <UtensilsCrossed className="w-4 h-4 text-[#c9932a] shrink-0" />
+                        <span className="text-xs font-bold text-white group-hover:text-[#c9932a] transition-colors truncate">
                           Reforma de Cocina e Instalaciones
                         </span>
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#c9932a] group-hover:translate-x-0.5 transition-all" />
-                    </Link>
+                      </Link>
+                      <Link
+                        href={`/${locale}/reservar?servicio=reformas-cocinas-madrid`}
+                        className="px-2.5 py-1 rounded-lg bg-[#c9932a] hover:bg-amber-400 text-graphite-950 font-black text-[11px] flex items-center gap-1 shrink-0 shadow-xs transition-all"
+                      >
+                        <Calendar className="w-3 h-3" />
+                        <span>Reservar</span>
+                      </Link>
+                    </div>
 
-                    <Link
-                      href={`/${locale}/servicios/reformas-integrales-viviendas`}
-                      className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#c9932a]/50 transition-all group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Home className="w-4 h-4 text-[#c9932a]" />
-                        <span className="text-xs font-bold text-white group-hover:text-[#c9932a] transition-colors">
+                    <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#c9932a]/50 transition-all">
+                      <Link
+                        href={`/${locale}/servicios/reformas-integrales-madrid`}
+                        className="flex items-center gap-2.5 flex-1 min-w-0 group"
+                      >
+                        <Home className="w-4 h-4 text-[#c9932a] shrink-0" />
+                        <span className="text-xs font-bold text-white group-hover:text-[#c9932a] transition-colors truncate">
                           Reforma Integral de Vivienda en Madrid
                         </span>
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#c9932a] group-hover:translate-x-0.5 transition-all" />
-                    </Link>
+                      </Link>
+                      <Link
+                        href={`/${locale}/reservar?servicio=reformas-integrales-madrid`}
+                        className="px-2.5 py-1 rounded-lg bg-[#c9932a] hover:bg-amber-400 text-graphite-950 font-black text-[11px] flex items-center gap-1 shrink-0 shadow-xs transition-all"
+                      >
+                        <Calendar className="w-3 h-3" />
+                        <span>Reservar</span>
+                      </Link>
+                    </div>
                   </div>
                 </div>
 
@@ -429,28 +447,31 @@ export default async function HomePage({ params }: PageProps) {
                     </span>
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-xl text-graphite-900 dark:text-white group-hover:text-[#03203d] dark:group-hover:text-[#c9932a] transition-colors">
-                      {trans.navTitle || s.key}
-                    </h3>
+                    <Link href={`/${locale}/servicios/${serviceSlug}`}>
+                      <h3 className="font-extrabold text-xl text-graphite-900 dark:text-white group-hover:text-[#03203d] dark:group-hover:text-[#c9932a] transition-colors">
+                        {trans.navTitle || s.key}
+                      </h3>
+                    </Link>
                     <p className="text-xs sm:text-sm text-graphite-600 dark:text-slate-400 mt-2.5 line-clamp-3 leading-relaxed">
                       {trans.shortDesc || "Ejecución profesional con mediciones detalladas y garantía escrita en Madrid."}
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-5 border-t border-slate-100 dark:border-graphite-800 mt-6 flex items-center justify-between">
-                  <Link
-                    href={`/${locale}/servicios/${serviceSlug}`}
-                    className="text-xs font-extrabold text-[#03203d] dark:text-[#c9932a] hover:underline flex items-center gap-1.5 min-h-[44px]"
-                  >
-                    <span>Información y presupuesto</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                  </Link>
+                <div className="pt-5 border-t border-slate-100 dark:border-graphite-800 mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
                   <Link
                     href={`/${locale}/reservar?servicio=${s.key}`}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-graphite-800 text-graphite-700 hover:bg-[#c9932a] hover:text-graphite-950 dark:text-slate-300 transition-colors min-h-[36px] flex items-center"
+                    className="flex-1 px-4 py-3 rounded-xl bg-[#c9932a] hover:bg-amber-400 text-graphite-950 font-black text-xs sm:text-sm shadow-md shadow-[#c9932a]/20 hover:shadow-lg transition-all flex items-center justify-center gap-2 min-h-[44px]"
                   >
-                    Reservar visita
+                    <Calendar className="w-4 h-4 text-graphite-950 shrink-0" />
+                    <span>Reservar visita</span>
+                  </Link>
+                  <Link
+                    href={`/${locale}/servicios/${serviceSlug}`}
+                    className="px-4 py-3 rounded-xl bg-[#03203d] hover:bg-[#05305a] text-white font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
+                  >
+                    <span>Ver servicio</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-[#c9932a] group-hover:translate-x-0.5 transition-transform" />
                   </Link>
                 </div>
               </div>

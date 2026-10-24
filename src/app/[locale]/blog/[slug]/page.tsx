@@ -13,17 +13,46 @@ interface BlogPostPageProps {
   };
 }
 
-export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-  const { locale, slug } = params;
-
-  const translation = await db.postTranslation.findFirst({
-    where: { locale, slug },
+async function resolvePostTranslation(locale: string, slug: string) {
+  let translation = await db.postTranslation.findFirst({
+    where: {
+      locale,
+      OR: [{ slug }, { post: { slug } }],
+    },
     include: { post: true },
   });
 
+  if (!translation) {
+    const anyMatch = await db.postTranslation.findFirst({
+      where: {
+        OR: [{ slug }, { post: { slug } }],
+      },
+      include: { post: true },
+    });
+
+    if (anyMatch) {
+      translation =
+        (await db.postTranslation.findFirst({
+          where: {
+            postId: anyMatch.postId,
+            locale,
+          },
+          include: { post: true },
+        })) || anyMatch;
+    }
+  }
+
+  return translation;
+}
+
+export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
+  const { locale, slug } = params;
+
+  const translation = await resolvePostTranslation(locale, slug);
+
   if (!translation) return {};
 
-  const canonical = `${BRAND.canonicalDomain}/${locale}/blog/${slug}`;
+  const canonical = `${BRAND.canonicalDomain}/${locale}/blog/${translation.slug}`;
 
   // Fetch sibling translations for hreflang
   const allTranslations = await db.postTranslation.findMany({
@@ -35,7 +64,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     languageAlternates[t.locale] = `${BRAND.canonicalDomain}/${t.locale}/blog/${t.slug}`;
   }
   languageAlternates["x-default"] = `${BRAND.canonicalDomain}/es/blog/${
-    allTranslations.find((t) => t.locale === "es")?.slug || slug
+    allTranslations.find((t) => t.locale === "es")?.slug || translation.slug
   }`;
 
   return {
@@ -61,10 +90,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 export default async function BlogPostDetailPage({ params }: BlogPostPageProps) {
   const { locale, slug } = params;
 
-  const translation = await db.postTranslation.findFirst({
-    where: { locale, slug },
-    include: { post: true },
-  });
+  const translation = await resolvePostTranslation(locale, slug);
 
   if (!translation || translation.post.status !== "APPROVED") {
     notFound();

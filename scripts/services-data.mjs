@@ -1770,7 +1770,7 @@ export const servicesData = [
   {
     key: "acondicionamiento-locales-madrid",
     category: "ACCESIBILIDAD_COMUNIDADES",
-    status: "DRAFT", // Note: kept as draft until technical capacity validation as per spec!
+    status: "APPROVED",
     orderIndex: 20,
     featuredImage: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80",
     translations: {
