@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const siteUrl = BRAND.siteUrl;
+    const siteUrl = req.nextUrl.origin || BRAND.siteUrl;
     const successUrl = `${siteUrl}/${locale}/cliente/presupuestos/pago-completado`;
     const cancelUrl = `${siteUrl}/${locale}/cliente/presupuestos`;
 

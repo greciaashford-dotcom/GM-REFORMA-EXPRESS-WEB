@@ -28,6 +28,7 @@ export default function ReschedulePage() {
   useEffect(() => {
     if (!date) return;
     fetchSlots();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date]);
 
   const fetchSlots = async () => {

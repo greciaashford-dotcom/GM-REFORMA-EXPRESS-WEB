@@ -15,6 +15,7 @@ export const Logo: React.FC<LogoProps> = ({
   return (
     <div className="flex items-center select-none py-1">
       {/* Official Transparent Brand Logo Image - 3X Larger, No Adjacent Text */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={LOGO_URL}
         alt="GM REFORMA EXPRESS"

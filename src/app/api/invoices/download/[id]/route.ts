@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { getServerSession } from "@/lib/auth/session";
 import { formatCurrency } from "@/lib/pricing/agreed-amount";
+import { BRAND } from "@/lib/constants";
 
 export async function GET(
   req: NextRequest,
@@ -35,13 +36,13 @@ export async function GET(
     }
 
     let issuer = {
-      commercialName: "GM REFORMA EXPRESS",
-      legalName: "Pendiente de verificación registral",
-      taxId: "Y90137803D",
+      commercialName: BRAND.commercialName,
+      legalName: BRAND.legalName,
+      taxId: BRAND.taxId,
       taxIdVerified: false,
-      address: "Madrid, España",
-      phone: "+34 640 677 948",
-      email: "notificaciones.info@reformaexpress.com",
+      address: BRAND.fiscalAddress,
+      phone: BRAND.phoneVisible,
+      email: BRAND.email,
     };
 
     try {
@@ -239,9 +240,10 @@ export async function GET(
   <div class="invoice-card">
     <div class="header">
       <div>
+        <img src="${BRAND.logoUrl}" alt="${issuer.commercialName}" style="max-height: 52px; width: auto; display: block; margin-bottom: 10px;" />
         <h1 class="brand-title">${issuer.commercialName}</h1>
         <div style="font-size: 13px; color: #475569;">
-          <strong>NIF/NIE:</strong> ${issuer.taxId}
+          <strong>Titular:</strong> ${issuer.legalName} · <strong>NIF/NIE:</strong> ${issuer.taxId}
           <div class="tax-badge-warning">Pendiente de verificación documental AEAT</div>
         </div>
         <div style="font-size: 13px; color: #475569; margin-top: 6px;">

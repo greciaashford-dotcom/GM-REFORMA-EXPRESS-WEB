@@ -21,6 +21,7 @@ export const ContinuousCarousel: React.FC = () => {
       <div className="carousel">
         <div className="carousel-inner">
           {allImages.map((img, index) => (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               key={index}
               src={img.src}

@@ -4,6 +4,7 @@ import db from "@/lib/db";
 import { isPostalCodeCovered } from "@/lib/constants";
 import { subscribeNewsletter } from "@/lib/marketing/engine";
 import { sendEmail } from "@/lib/email/sender";
+import { getEmailHeaderHtml, getEmailFooterHtml } from "@/lib/email/templates";
 
 const leadSchema = z.object({
   name: z.string().min(2, "El nombre es obligatorio"),
@@ -100,16 +101,16 @@ export async function POST(req: NextRequest) {
         to: email,
         subject: "Hemos recibido su solicitud de presupuesto - GM REFORMA EXPRESS",
         html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1e293b;">
-            <h2 style="color: #0f4c5c;">Solicitud de Presupuesto Recibida</h2>
-            <p>Estimado/a <strong>${name}</strong>,</p>
-            <p>Hemos recibido los detalles de su proyecto para el área de Madrid. Uno de nuestros técnicos especializados revisará su petición y se pondrá en contacto con usted en un plazo máximo de 24 horas laborables.</p>
-            <div style="background-color: #f8fafc; border-left: 4px solid #0f4c5c; padding: 12px; margin: 20px 0;">
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1e293b; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
+            ${getEmailHeaderHtml("GM REFORMA EXPRESS", "Solicitud de Presupuesto Recibida")}
+            <p style="font-size: 16px;">Estimado/a <strong>${name}</strong>,</p>
+            <p style="font-size: 15px; line-height: 1.5;">Hemos recibido los detalles de su proyecto para el área de Madrid. Uno de nuestros técnicos especializados revisará su petición y se pondrá en contacto con usted en un plazo máximo de 24 horas laborables.</p>
+            <div style="background-color: #f8fafc; border-left: 4px solid #03203d; padding: 14px; margin: 20px 0; border-radius: 0 8px 8px 0;">
               <p style="margin: 4px 0;"><strong>Servicio:</strong> ${lead.serviceName || "Reforma general"}</p>
               <p style="margin: 4px 0;"><strong>Código Postal:</strong> ${postalCode || "Madrid"}</p>
               <p style="margin: 4px 0;"><strong>Preferencia de contacto:</strong> ${preferredContactTime || "Cualquiera"}</p>
             </div>
-            <p style="font-size: 13px; color: #64748b;">GM REFORMA EXPRESS Madrid · Tel: +34 640 677 948 · notificaciones.info@reformaexpress.com</p>
+            ${getEmailFooterHtml()}
           </div>
         `,
       });

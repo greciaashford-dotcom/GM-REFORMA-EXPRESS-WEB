@@ -35,6 +35,7 @@ export default function PerfilClientePage({ params }: PerfilClientePageProps) {
 
   useEffect(() => {
     fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchProfile = async () => {

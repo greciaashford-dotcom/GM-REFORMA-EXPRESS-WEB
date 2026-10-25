@@ -24,7 +24,7 @@ export default async function ClienteLayout({ children, params }: ClienteLayoutP
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect(`/${locale}/login?callback=/cliente`);
+    redirect(`/${locale}/login?callback=/${locale}/cliente`);
   }
 
   const navLinks = [

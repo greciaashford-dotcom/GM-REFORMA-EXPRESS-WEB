@@ -46,6 +46,7 @@ export default function PresupuestosClientePage({ params }: PresupuestosClienteP
 
   useEffect(() => {
     fetchQuotes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchQuotes = async () => {

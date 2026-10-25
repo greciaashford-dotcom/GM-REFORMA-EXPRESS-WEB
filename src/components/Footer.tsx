@@ -232,6 +232,7 @@ export const Footer: React.FC<FooterProps> = ({ locale }) => {
               className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 hover:border-secondary/60 transition-all group shadow-sm"
               title="DESTACA EN LINEA LLC - Desarrollo Web y Soluciones Digitales"
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="https://assets.zyrosite.com/YyvDQR7w2xsGZbE9/logo_blanco_2000x800-A3QlD2M82RiRG7Xp.png"
                 alt="DESTACA EN LINEA LLC"

@@ -43,6 +43,7 @@ export async function GET() {
         name: user.name,
         role: user.role,
         profile: user.customerProfile,
+        customerProfile: user.customerProfile,
       },
     });
   } catch (error: any) {

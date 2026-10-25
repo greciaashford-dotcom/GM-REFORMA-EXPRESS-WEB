@@ -100,6 +100,7 @@ export default function BookingPage({ params }: BookingPageProps) {
     if (step === 5) {
       fetchSlots();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, selectedDate, bookingType]);
 
   const fetchSlots = async () => {
